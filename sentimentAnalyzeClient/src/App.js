@@ -2,8 +2,12 @@ import './bootstrap.min.css';
 import './App.css';
 import EmotionTable from './EmotionTable.js';
 import React from 'react';
+import axios from 'axios';
 
 class App extends React.Component {
+    componentDidMount() {
+    document.title = "Sentiment Analyzer";
+  }
   state = {innercomp:<textarea rows="4" cols="50" id="textinput"/>,
             mode: "text",
           sentimentOutput:[],
@@ -34,6 +38,7 @@ class App extends React.Component {
 
   sendForSentimentAnalysis = () => {
     this.setState({sentiment:true});
+    let ret = "";
     let url = ".";
 
     if(this.state.mode === "url") {
@@ -41,34 +46,38 @@ class App extends React.Component {
     } else {
       url = url+"/text/sentiment?text="+document.getElementById("textinput").value;
     }
-    fetch(url).then((response)=>{
-        response.text().then((data)=>{
-        this.setState({sentimentOutput:data});
-        let output = data;
-        if(data === "positive") {
-          output = <div style={{color:"green",fontSize:20}}>{data}</div>
-        } else if (data === "negative"){
-          output = <div style={{color:"red",fontSize:20}}>{data}</div>
+    ret = axios.get(url);
+    ret.then((response)=>{
+    // fetch(url).then((response)=>{
+    //     response.text().then((data)=>{
+        this.setState({sentimentOutput:response.data});
+        let output = response.data;
+        if(response.data === "positive") {
+          output = <div style={{color:"green",fontSize:20}}>{response.data}</div>
+        } else if (response.data === "negative"){
+          output = <div style={{color:"red",fontSize:20}}>{response.data}</div>
         } else {
-          output = <div style={{color:"orange",fontSize:20}}>{data}</div>
+          output = <div style={{color:"yellow",fontSize:20}}>{response.data}</div>
         }
         this.setState({sentimentOutput:output});
-      })});
+      });
   }
 
   sendForEmotionAnalysis = () => {
 
     this.setState({sentiment:false});
+    let ret = "";
     let url = ".";
     if(this.state.mode === "url") {
       url = url+"/url/emotion?url="+document.getElementById("textinput").value;
     } else {
       url = url+"/text/emotion/?text="+document.getElementById("textinput").value;
     }
-    fetch(url).then((response)=>{
-      response.json().then((data)=>{
-      this.setState({sentimentOutput:<EmotionTable emotions={data}/>});
-  })})  ;
+    ret = axios.get(url);
+
+    ret.then((response)=>{
+      this.setState({sentimentOutput:<EmotionTable emotions={response.data}/>});
+  });
   }
   
 
